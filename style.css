@@ -124,16 +124,57 @@
   @keyframes navDrop{ to{ transform: translateY(0); } }
   
   nav.scrolled{
-    padding: 12px 32px; background: rgba(251,243,231,.9);
-    box-shadow: 0 8px 24px rgba(46,31,34,.08);
-    border-bottom: 1px solid rgba(201,151,78,.18);
+    padding: 12px 32px;
+    background: rgba(125, 48, 73, 0.95); /* Wine / Maroon */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 24px rgba(46,31,34,.2);
+    border-bottom: 1px solid rgba(201,151,78,.2);
   }
-  nav.scrolled .nav-mark-txt{ color: var(--wine); }
-  nav.scrolled .nav-links a:not(.nav-cta){ color: var(--ink-dim); }
-  nav.scrolled .nav-links a:not(.nav-cta):hover{ color: var(--ink); }
-  nav.scrolled .nav-links a.active:not(.nav-cta){ color: var(--wine); }
-  nav.scrolled .nav-toggle span{ background: var(--ink); }
-  nav.scrolled .nav-indicator{ background: rgba(125,48,73,.1); }
+  
+  /* Logo */
+  nav.scrolled .nav-mark-txt{
+    color: var(--gold-light);
+  }
+  
+  /* Normal Links */
+  nav.scrolled .nav-links a:not(.nav-cta){
+    color: var(--ivory-dim);
+  }
+  
+  nav.scrolled .nav-links a:not(.nav-cta):hover{
+    color: var(--gold-light);
+  }
+  
+  nav.scrolled .nav-links a.active:not(.nav-cta){
+    color: var(--gold-light);
+  }
+  
+  nav.scrolled .nav-links a:not(.nav-cta)::after{
+    background: var(--gold-light);
+  }
+  
+  /* CTA Button */
+  nav.scrolled .nav-cta{
+    border: 1px solid var(--gold-light);
+    color: var(--gold-light) !important;
+  }
+  
+  nav.scrolled .nav-cta:hover{
+    background: var(--gold-light);
+    color: var(--black-soft) !important;
+  }
+  
+  /* Hamburger */
+  nav.scrolled .nav-toggle span{
+    background: var(--ivory);
+  }
+  
+  /* Active Link Indicator */
+  nav.scrolled .nav-indicator{
+    background: rgba(248,239,224,.12);
+  }
+  
   
   .nav-mark{
     position: relative; display:flex; align-items:center; justify-content:center;
