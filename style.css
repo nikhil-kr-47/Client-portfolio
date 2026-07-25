@@ -125,56 +125,19 @@
   
   nav.scrolled{
     padding: 12px 32px;
-    background: rgba(125, 48, 73, 0.95); /* Wine / Maroon */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 8px 24px rgba(46,31,34,.2);
+    background: rgba(125, 48, 73, 0.97); /* wine */
+    box-shadow: 0 8px 24px rgba(46,31,34,.22);
     border-bottom: 1px solid rgba(201,151,78,.2);
   }
-  
-  /* Logo */
-  nav.scrolled .nav-mark-txt{
-    color: var(--gold-light);
-  }
-  
-  /* Normal Links */
-  nav.scrolled .nav-links a:not(.nav-cta){
-    color: var(--ivory-dim);
-  }
-  
-  nav.scrolled .nav-links a:not(.nav-cta):hover{
-    color: var(--gold-light);
-  }
-  
-  nav.scrolled .nav-links a.active:not(.nav-cta){
-    color: var(--gold-light);
-  }
-  
-  nav.scrolled .nav-links a:not(.nav-cta)::after{
-    background: var(--gold-light);
-  }
-  
-  /* CTA Button */
-  nav.scrolled .nav-cta{
-    border: 1px solid var(--gold-light);
-    color: var(--gold-light) !important;
-  }
-  
-  nav.scrolled .nav-cta:hover{
-    background: var(--gold-light);
-    color: var(--black-soft) !important;
-  }
-  
-  /* Hamburger */
-  nav.scrolled .nav-toggle span{
-    background: var(--ivory);
-  }
-  
-  /* Active Link Indicator */
-  nav.scrolled .nav-indicator{
-    background: rgba(248,239,224,.12);
-  }
-  
+  nav.scrolled .nav-mark-txt{ color: var(--gold-light); }
+  nav.scrolled .nav-links a:not(.nav-cta){ color: var(--ivory-dim); }
+  nav.scrolled .nav-links a:not(.nav-cta):hover{ color: var(--ivory); }
+  nav.scrolled .nav-links a:not(.nav-cta)::after{ background: var(--gold-light); }
+  nav.scrolled .nav-links a.active:not(.nav-cta){ color: var(--gold-light); }
+  nav.scrolled .nav-cta{ border-color: var(--gold-light); color: var(--gold-light) !important; }
+  nav.scrolled .nav-cta:hover{ background: var(--gold-light); color: var(--black-soft) !important; }
+  nav.scrolled .nav-toggle span{ background: var(--ivory); }
+  nav.scrolled .nav-indicator{ background: rgba(248,239,224,.12); }
   
   .nav-mark{
     position: relative; display:flex; align-items:center; justify-content:center;
@@ -587,6 +550,7 @@
   
   @media (max-width: 720px){
     .nav-indicator{ display:none; }
+    .nav-toggle{ margin-left: auto; }
     .nav-links{
       position: fixed; inset: 0 0 0 32%; background: rgba(28,17,21,.98);
       flex-direction: column; justify-content:center; align-items: flex-start; gap: 26px;
