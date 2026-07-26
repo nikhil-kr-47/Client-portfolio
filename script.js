@@ -28,16 +28,42 @@
    updateProgress();
    
    /* ============================================================
-      CURSOR GLOW — smooth trailing lag via GSAP when available
+      CURSOR GLOW — liquid, velocity-reactive: stretches and rotates
+      along its direction of travel, snaps back to round when idle.
       ============================================================ */
    const cursorGlow = document.getElementById('cursorGlow');
    if (isFinePointer && !reduceMotion) {
      if (hasGSAP) {
+       gsap.set(cursorGlow, { xPercent: -50, yPercent: -50 });
        const glowX = gsap.quickTo(cursorGlow, 'left', { duration: 0.5, ease: 'power3' });
        const glowY = gsap.quickTo(cursorGlow, 'top', { duration: 0.5, ease: 'power3' });
+       let lastCX = null, lastCY = null, lastCT = performance.now();
+       let idleTimer = null;
+   
        window.addEventListener('pointermove', (e) => {
          glowX(e.clientX); glowY(e.clientY);
          cursorGlow.classList.add('active');
+   
+         const now = performance.now();
+         if (lastCX !== null) {
+           const dt = Math.max(now - lastCT, 1);
+           const vx = (e.clientX - lastCX) / dt;
+           const vy = (e.clientY - lastCY) / dt;
+           const speed = Math.min(Math.hypot(vx, vy) * 55, 1.7);
+           const angle = Math.atan2(vy, vx) * (180 / Math.PI);
+           gsap.to(cursorGlow, {
+             rotate: angle,
+             scaleX: 1 + speed,
+             scaleY: 1 - speed * 0.32,
+             duration: 0.35, ease: 'power2.out', overwrite: 'auto'
+           });
+         }
+         lastCX = e.clientX; lastCY = e.clientY; lastCT = now;
+   
+         clearTimeout(idleTimer);
+         idleTimer = setTimeout(() => {
+           gsap.to(cursorGlow, { scaleX: 1, scaleY: 1, duration: 0.6, ease: 'elastic.out(1, 0.5)' });
+         }, 120);
        });
      } else {
        window.addEventListener('pointermove', (e) => {
@@ -199,8 +225,119 @@
    })();
    
    /* ============================================================
-      3D TILT CARDS — VanillaTilt.js, with glare
+      IMPACT 3D SCENE — Three.js wireframe geometry + particle field,
+      a real WebGL layer behind the "By The Numbers" stats. Rotates
+      continuously, drifts gently with the cursor, and gains extra
+      spin tied to scroll progress through the section.
       ============================================================ */
+   (function initImpactScene() {
+     const canvas = document.getElementById('impactCanvas');
+     if (!canvas || typeof THREE === 'undefined') return;
+     const section = canvas.closest('.impact');
+     if (!section) return;
+   
+     let width = section.clientWidth, height = section.clientHeight;
+   
+     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+     renderer.setSize(width, height);
+   
+     const scene = new THREE.Scene();
+     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
+     camera.position.z = 6.4;
+   
+     const group = new THREE.Group();
+     scene.add(group);
+   
+     const outerGeo = new THREE.IcosahedronGeometry(1.9, 1);
+     const outerMesh = new THREE.Mesh(outerGeo, new THREE.MeshBasicMaterial({
+       color: 0xC9A15A, wireframe: true, transparent: true, opacity: 0.5
+     }));
+     group.add(outerMesh);
+   
+     const innerGeo = new THREE.IcosahedronGeometry(1.15, 0);
+     const innerMesh = new THREE.Mesh(innerGeo, new THREE.MeshBasicMaterial({
+       color: 0x5FA98A, wireframe: true, transparent: true, opacity: 0.35
+     }));
+     group.add(innerMesh);
+   
+     const PARTICLE_COUNT = width < 640 ? 140 : 240;
+     const positions = new Float32Array(PARTICLE_COUNT * 3);
+     for (let i = 0; i < PARTICLE_COUNT; i++) {
+       const r = 2.6 + Math.random() * 2.2;
+       const theta = Math.random() * Math.PI * 2;
+       const phi = Math.acos((Math.random() * 2) - 1);
+       positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+       positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+       positions[i * 3 + 2] = r * Math.cos(phi);
+     }
+     const particleGeo = new THREE.BufferGeometry();
+     particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+     const particleMat = new THREE.PointsMaterial({
+       color: 0xE8CA92, size: 0.028, transparent: true, opacity: 0.75, sizeAttenuation: true
+     });
+     const particles = new THREE.Points(particleGeo, particleMat);
+     scene.add(particles);
+   
+     let targetRotX = 0, targetRotY = 0, curRotX = 0, curRotY = 0;
+     let scrollSpin = 0;
+   
+     function onPointerMove(e) {
+       const rect = section.getBoundingClientRect();
+       const px = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+       const py = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+       targetRotY = px * 0.35;
+       targetRotX = py * 0.25;
+     }
+   
+     function resize() {
+       width = section.clientWidth;
+       height = section.clientHeight;
+       if (!width || !height) return;
+       camera.aspect = width / height;
+       camera.updateProjectionMatrix();
+       renderer.setSize(width, height);
+     }
+   
+     function render() {
+       group.rotation.y += 0.0018;
+       group.rotation.x += 0.0007;
+       innerMesh.rotation.y -= 0.003;
+       innerMesh.rotation.x -= 0.0012;
+       particles.rotation.y += 0.0006;
+   
+       curRotX += (targetRotX - curRotX) * 0.05;
+       curRotY += (targetRotY + scrollSpin - curRotY) * 0.05;
+       group.rotation.x += curRotX * 0.02;
+       group.rotation.y += curRotY * 0.02;
+   
+       renderer.render(scene, camera);
+     }
+   
+     if (reduceMotion) {
+       render();
+       return;
+     }
+   
+     let rafId2 = requestAnimationFrame(function loop() {
+       render();
+       rafId2 = requestAnimationFrame(loop);
+     });
+     window.addEventListener('resize', resize);
+     if (isFinePointer) section.addEventListener('pointermove', onPointerMove);
+   
+     if (hasScrollTrigger) {
+       ScrollTrigger.create({
+         trigger: section,
+         start: 'top bottom',
+         end: 'bottom top',
+         scrub: true,
+         onUpdate: self => { scrollSpin = (self.progress - 0.5) * 2.2; }
+       });
+     }
+   })();
+   
+   /* ============================================================
    if (window.VanillaTilt && isFinePointer && !reduceMotion) {
      VanillaTilt.init(document.querySelectorAll('.tilt'), {
        max: 9,
@@ -475,6 +612,7 @@
      heroTl
        .from('.hero-name .shimmer', { opacity: 0, y: 30, duration: 0.75, ease: 'power3.out' }, 0.75)
        .from('.hero-role', { opacity: 0, y: 14, duration: 0.55, ease: 'power2.out' }, 1.0)
+       .call(() => document.querySelector('.hero-role.glitch')?.classList.add('glitching'), [], 1.05)
        .from('.hero-tagline', { opacity: 0, y: 14, duration: 0.55, ease: 'power2.out' }, 1.1)
        .from('.hero-stats .stat', { opacity: 0, y: 20, duration: 0.55, ease: 'back.out(1.7)', stagger: 0.09 }, 1.2)
        .from('.hero-actions .btn', { opacity: 0, y: 14, scale: 0.9, duration: 0.5, ease: 'back.out(1.8)', stagger: 0.09 }, 1.4);
@@ -503,14 +641,48 @@
    }
    
    /* ============================================================
-      GRID / CARD STAGGER ENTRANCES — gallery, values, impact,
-      testimonials, timeline steps. Each grid gets its own entrance
+      CINEMATIC HORIZONTAL GALLERY — pins the section and slides the
+      filmstrip sideways as the user scrolls, desktop/fine-pointer
+      only. On touch devices or reduced motion, the gallery simply
+      stays as a normal responsive grid (handled by the fallback
+      stagger config below).
+      ============================================================ */
+   function initGalleryHorizontalScroll() {
+     const section = document.getElementById('gallery');
+     const track = document.querySelector('.gallery-grid');
+     const hint = document.getElementById('galleryHint');
+     if (!section || !track) return false;
+     if (!(hasScrollTrigger && isFinePointer && !reduceMotion && window.innerWidth > 900)) return false;
+   
+     track.classList.add('pinned-mode');
+     hint?.classList.add('visible');
+   
+     const getScrollAmount = () => Math.max(track.scrollWidth - section.clientWidth, 0);
+   
+     ScrollTrigger.create({
+       trigger: section,
+       start: 'top top',
+       end: () => '+=' + getScrollAmount(),
+       pin: true,
+       anticipatePin: 1,
+       invalidateOnRefresh: true,
+       onUpdate: self => { gsap.set(track, { x: -getScrollAmount() * self.progress }); },
+       onLeave: () => hint?.classList.remove('visible'),
+       onEnterBack: () => hint?.classList.add('visible')
+     });
+   
+     return true;
+   }
+   const galleryHorizontalActive = hasGSAP ? initGalleryHorizontalScroll() : false;
+   
+   /* ============================================================
+      GRID / CARD STAGGER ENTRANCES — values, impact, testimonials,
+      timeline steps (and gallery, only when the cinematic horizontal
+      scroll above did NOT activate). Each grid gets its own entrance
       character so the page doesn't feel like one repeated fade.
       ============================================================ */
    if (hasScrollTrigger && !reduceMotion) {
      const gridConfigs = [
-       { sel: '.gallery-grid', items: '.g-item',
-         anim: { opacity: 0, scale: 0.82, rotateZ: -3, y: 40 } },
        { sel: '.values-grid', items: '.value-card',
          anim: { opacity: 0, y: 50, rotateX: -25, transformOrigin: '50% 0%', transformPerspective: 800 } },
        { sel: '.impact-grid', items: '.impact-card',
@@ -520,6 +692,11 @@
        { sel: '.timeline', items: '.tl-step',
          anim: { opacity: 0, x: i => (i % 2 === 0 ? -40 : 40), y: 20 } }
      ];
+   
+     if (!galleryHorizontalActive) {
+       gridConfigs.unshift({ sel: '.gallery-grid', items: '.g-item',
+         anim: { opacity: 0, scale: 0.82, rotateZ: -3, y: 40 } });
+     }
    
      gridConfigs.forEach(cfg => {
        const container = document.querySelector(cfg.sel);

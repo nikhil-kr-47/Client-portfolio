@@ -53,7 +53,7 @@
     </div>
 
     <h1 class="hero-name reveal"><span class="line1">Klaudia</span><br><span class="shimmer">Kowalczyk</span></h1>
-    <p class="hero-role reveal">Network Marketing Leader &amp; Mentor</p>
+    <p class="hero-role reveal glitch" data-text="Network Marketing Leader &amp; Mentor">Network Marketing Leader &amp; Mentor</p>
 
     <p class="hero-tagline reveal">
       Top 1% Network Marketing Leader &amp; Mentor — helping ordinary people
@@ -95,6 +95,7 @@
 
 <!-- ABOUT -->
 <section id="about" class="section about">
+  <span class="liquid-blob liquid-blob--about" aria-hidden="true"></span>
   <div class="section-inner about-grid">
     <div class="about-copy">
       <p class="section-eyebrow reveal">The Leader</p>
@@ -231,6 +232,9 @@
     <p class="section-eyebrow reveal">The Feed</p>
     <h2 class="reveal">A life built on the move.</h2>
     <p class="reveal gallery-note">Original illustrated artwork — placeholders for the client's real photography.</p>
+    <p class="gallery-hint" id="galleryHint">Keep scrolling to explore
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </p>
     <div class="gallery-grid">
 
       <!-- Dubai Skyline -->
@@ -441,6 +445,7 @@
 
 <!-- IMPACT / NUMBERS -->
 <section id="impact" class="section impact">
+  <canvas id="impactCanvas" class="impact-canvas" aria-hidden="true"></canvas>
   <div class="section-inner">
     <p class="section-eyebrow reveal light">By The Numbers</p>
     <h2 class="reveal light">Reach that turns into results.</h2>
@@ -513,6 +518,7 @@
 
 <!-- MENTORSHIP PROGRAM -->
 <section id="mentorship" class="section mentorship">
+  <span class="liquid-blob liquid-blob--mentorship" aria-hidden="true"></span>
   <div class="section-inner">
     <p class="section-eyebrow reveal">Work Together</p>
     <h2 class="reveal">The Mentorship Program.</h2>
@@ -609,6 +615,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.15.0/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.4/confetti.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

@@ -163,6 +163,50 @@
   /* text-split spans (populated by script.js for GSAP letter/word reveals) */
   .char, .word{ display: inline-block; will-change: transform, opacity; }
   
+  /* glitch — RGB-split flicker, triggered once by adding .glitching (see script.js) */
+  .glitch{ position: relative; }
+  .glitch::before, .glitch::after{
+    content: attr(data-text);
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    overflow: hidden; opacity: 0; pointer-events: none;
+  }
+  .glitch::before{ color: var(--emerald-light); transform: translate(-2px, 0); mix-blend-mode: screen; }
+  .glitch::after{ color: var(--bronze); transform: translate(2px, 0); mix-blend-mode: screen; }
+  .glitch.glitching::before{ animation: glitchTop .5s steps(2, end) 1; }
+  .glitch.glitching::after{ animation: glitchBottom .5s steps(2, end) 1; }
+  @keyframes glitchTop{
+    0%{ opacity: 0; clip-path: inset(0 0 90% 0); }
+    10%{ opacity: .85; clip-path: inset(10% 0 60% 0); transform: translate(-4px,0); }
+    30%{ opacity: .8; clip-path: inset(40% 0 20% 0); transform: translate(3px,0); }
+    50%{ opacity: .6; clip-path: inset(70% 0 5% 0); transform: translate(-2px,0); }
+    100%{ opacity: 0; clip-path: inset(0 0 100% 0); }
+  }
+  @keyframes glitchBottom{
+    0%{ opacity: 0; clip-path: inset(90% 0 0 0); }
+    15%{ opacity: .85; clip-path: inset(55% 0 15% 0); transform: translate(4px,0); }
+    35%{ opacity: .8; clip-path: inset(20% 0 45% 0); transform: translate(-3px,0); }
+    55%{ opacity: .6; clip-path: inset(5% 0 70% 0); transform: translate(2px,0); }
+    100%{ opacity: 0; clip-path: inset(100% 0 0 0); }
+  }
+  
+  /* liquid morphing blobs — organic decorative shapes, distinct from the ambient radial glows */
+  .liquid-blob{
+    position: absolute; z-index: 0; pointer-events: none; filter: blur(46px); opacity: .3;
+    animation: liquidMorph 13s ease-in-out infinite, liquidDrift 17s ease-in-out infinite;
+  }
+  @keyframes liquidMorph{
+    0%,100%{ border-radius: 42% 58% 65% 35% / 45% 40% 60% 55%; }
+    25%{ border-radius: 65% 35% 45% 55% / 55% 65% 35% 45%; }
+    50%{ border-radius: 35% 65% 55% 45% / 40% 45% 55% 60%; }
+    75%{ border-radius: 55% 45% 35% 65% / 65% 35% 45% 55%; }
+  }
+  @keyframes liquidDrift{
+    0%,100%{ transform: translate(0,0) scale(1); }
+    50%{ transform: translate(26px,-18px) scale(1.07); }
+  }
+  .liquid-blob--about{ width: 320px; height: 320px; background: var(--gold); top: -70px; right: -70px; }
+  .liquid-blob--mentorship{ width: 260px; height: 260px; background: var(--emerald); bottom: -50px; left: -50px; animation-delay: -4s, -6s; }
+  
   .body-lg{ font-size: clamp(1rem, 1.4vw, 1.15rem); line-height: 1.7; color: var(--ink-dim); max-width: 60ch; }
   .body-lg.light{ color: var(--ivory-dim); }
   
@@ -511,6 +555,21 @@
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
     grid-auto-rows: 220px;
   }
+  /* Pinned horizontal-scroll mode — added by script.js on desktop/fine-pointer only.
+     The section is pinned via ScrollTrigger while this track translates sideways. */
+  .gallery-grid.pinned-mode{
+    display: flex; flex-wrap: nowrap; grid-auto-rows: unset;
+    gap: 26px; width: max-content; padding-right: 8vw;
+  }
+  .gallery-grid.pinned-mode .g-item{ width: 30vw; max-width: 440px; height: 62vh; max-height: 560px; flex-shrink: 0; }
+  .gallery-hint{
+    display: none; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-dim); margin: -8px 0 22px;
+  }
+  .gallery-hint.visible{ display: inline-flex; }
+  .gallery-hint svg{ width: 16px; height: 16px; animation: hintSlide 1.6s ease-in-out infinite; }
+  @keyframes hintSlide{ 0%,100%{ transform: translateX(0); opacity: .5; } 50%{ transform: translateX(6px); opacity: 1; } }
   .g-tall{ grid-row: span 2; }
   .g-item{
     position: relative; margin:0; border-radius: 18px; overflow: hidden;
@@ -563,6 +622,7 @@
   
   /* ---------------- IMPACT ---------------- */
   .impact{ background: linear-gradient(160deg, var(--emerald) 0%, #12241C 55%, var(--black) 100%); color: var(--ivory); }
+  .impact-canvas{ position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; display: block; opacity: .75; }
   .impact-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
   .impact-card{
     background: rgba(244,239,230,.08); border: 1px solid rgba(244,239,230,.16);
